@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Lino M.">
+
+<title>Master</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="master_files/libs/clipboard/clipboard.min.js"></script>
+<script src="master_files/libs/quarto-html/quarto.js"></script>
+<script src="master_files/libs/quarto-html/popper.min.js"></script>
+<script src="master_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="master_files/libs/quarto-html/anchor.min.js"></script>
+<link href="master_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="master_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="master_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="master_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="master_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Master</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Lino M. </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>The code and report is entirely my own work, unless indicated otherwise. ChatGPT was used as an AI assistant to help write code.</p>
+<hr>
+<section id="summary" class="level2">
+<h2 class="anchored" data-anchor-id="summary">Summary</h2>
+<ul>
+<li><p><strong>Goal of the challenge</strong> – <em>Determine whether issuing a red card ultimately leads to <strong>more total goals</strong> in a football match.</em></p></li>
+<li><p><strong>Data</strong> – 20 000 football matches (10 European leagues, 5 seasons) (games.csv) + minute-stamped goals &amp; red-cards (events.csv).</p></li>
+<li><p><strong>Two analytical lenses</strong></p>
+<ol type="1">
+<li><p><strong>Across-matches:</strong> compare matches with vs.&nbsp;without a red.</p>
+<ul>
+<li>OLS (no controls) → +0.05 extra goals (p &gt; .05).</li>
+<li>OLS (with controls) → +0.07 extra goals (p &lt; .05).</li>
+<li>Poisson GLM (with controls) → +2.6 % goals (p &lt; .05).</li>
+<li>Limitation: ignores timing; prone to omitted-variable bias.</li>
+</ul></li>
+<li><p><strong>Within-match:</strong> use only games with a single red card.</p>
+<ul>
+<li>Paired <em>pre/post</em> rate diff ⇒ +0.013 g · min⁻¹ (p &lt; .05).</li>
+<li><strong>Poisson GLM + log-exposure offset</strong> ⇒ per-minute goal rate <strong>↑ 55 %</strong> after a red card<br>
+(exp(γ̂₁) ≈ 1.55, ϕ ≈ 1.05).</li>
+</ul></li>
+</ol></li>
+<li><p><strong>Robustness</strong> – Effect survives league, team, season/trend controls.</p></li>
+<li><p><strong>Core finding</strong></p>
+<blockquote class="blockquote">
+<p><strong>Once a match goes to 10 v 11, the combined scoring rate of both teams rises by ≈ 55 %.</strong></p>
+</blockquote></li>
+<li><p><strong>Caveats</strong> – Unobserved match-intensity &amp; fatigue may confound across-match results; even in within-match comparisons omitted variables may still exist.</p></li>
+</ul>
+<section id="directions-for-future-work" class="level3">
+<h3 class="anchored" data-anchor-id="directions-for-future-work">Directions for Future Work</h3>
+<ul>
+<li><p><strong>Heterogeneity checks</strong></p>
+<ul>
+<li>Separate uplifts by <em>league</em>, <em>home-vs-away offender</em>, and <em>card-minute buckets</em> (0–15, 16–30 …).</li>
+</ul></li>
+<li><p><strong>Richer causal frameworks</strong></p>
+<ul>
+<li><strong>Propensity-score matching</strong> at match level using league, season, team attack/defence ratings.</li>
+<li>Minute-resolved <strong>Difference-in-Differences</strong>: untreated minutes from no-card matches as control.</li>
+<li><strong>Event-time hazard models</strong> (discrete-time logit / Cox PH) with time-varying “RedOnPitch” covariate.</li>
+<li><strong>Synthetic control</strong> for repeated fixtures (same home/away pair across seasons).</li>
+</ul></li>
+<li><p><strong>Model extensions</strong></p>
+<ul>
+<li>Allow for multiple cards: indicator for ≥ 2 reds; interaction with first-card timing.</li>
+<li>Hierarchical (mixed-effects) Poisson to share strength across teams/leagues.</li>
+</ul></li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="install-packages-take-snapshot" class="level2">
+<h2 class="anchored" data-anchor-id="install-packages-take-snapshot">1 Install packages &amp; take snapshot</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"here"</span>, <span class="st">"janitor"</span>, <span class="st">"lmtest"</span>, <span class="st">"sandwich"</span>, </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"tidymodels"</span>, <span class="st">"tidyverse"</span>))</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># *lock in* the session state</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">snapshot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="load-required-packages" class="level2">
+<h2 class="anchored" data-anchor-id="load-required-packages">2 Load required packages</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># restore the snapshot taken above</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>renv<span class="sc">::</span><span class="fu">restore</span>()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)         <span class="co"># build OS‑agnostic paths</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)      <span class="co"># data cleaning helpers</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)   <span class="co"># modelling grammar</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)    <span class="co"># ggplot2, dplyr, etc.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="read-tidy-data" class="level2">
+<h2 class="anchored" data-anchor-id="read-tidy-data">3 Read &amp; tidy data</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">#  Games data set ----------------------------------------------------</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>games <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"games.csv"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">home_team =</span> <span class="fu">as_factor</span>(home_team),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="at">away_team =</span> <span class="fu">as_factor</span>(away_team),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="at">competition =</span> <span class="fu">as_factor</span>(competition),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">total_goals =</span> home_goals <span class="sc">+</span> away_goals</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">year =</span> <span class="fu">as_factor</span>(<span class="fu">year</span>(date)), </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">month =</span> <span class="fu">as_factor</span>(<span class="fu">month</span>(date)), </span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">day =</span> <span class="fu">as_factor</span>(<span class="fu">day</span>(date)), </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">season =</span> <span class="fu">as_factor</span>(</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">case_when</span>(</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                date <span class="sc">&lt;</span> <span class="st">"2019-06-01"</span> <span class="sc">~</span> <span class="st">"2018/2019"</span>, </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                date <span class="sc">&gt;</span> <span class="st">"2019-06-01"</span> <span class="sc">&amp;</span> date <span class="sc">&lt;</span> <span class="st">"2020-04-01"</span> <span class="sc">~</span> <span class="st">"2019/2020"</span>, </span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                date <span class="sc">&gt;</span> <span class="st">"2020-04-01"</span> <span class="sc">&amp;</span> date <span class="sc">&lt;</span> <span class="st">"2021-06-01"</span> <span class="sc">~</span> <span class="st">"2020/2021"</span>, </span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                date <span class="sc">&gt;</span> <span class="st">"2021-06-01"</span> <span class="sc">&amp;</span> date <span class="sc">&lt;</span> <span class="st">"2022-06-01"</span> <span class="sc">~</span> <span class="st">"2021/2022"</span>, </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                date <span class="sc">&gt;</span> <span class="st">"2022-06-01"</span> <span class="sc">~</span> <span class="st">"2022/2023"</span>, </span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                </span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        ), </span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="at">.after =</span> date</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(season) <span class="sc">|&gt;</span> </span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>        <span class="at">day_in_season =</span> <span class="fu">as.numeric</span>(<span class="fu">difftime</span>(date, <span class="fu">min</span>(date), <span class="at">units =</span> <span class="st">"days"</span>)), </span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>        <span class="at">.after =</span> season</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="co">#  Events data set ---------------------------------------------------</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>events <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">here</span>(<span class="st">"events.csv"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>        <span class="at">side =</span> <span class="fu">as_factor</span>(side),</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>        <span class="at">type =</span> <span class="fu">as_factor</span>(type)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>red_minutes <span class="ot">&lt;-</span> events <span class="sc">|&gt;</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"red_card"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">arrange</span>(game_id, minute) <span class="sc">|&gt;</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(game_id) <span class="sc">|&gt;</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">order =</span> <span class="fu">row_number</span>(),</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>           <span class="at">card_label =</span> <span class="fu">paste0</span>(<span class="st">"red_card"</span>, order, <span class="st">"_minute"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(game_id, card_label, minute) <span class="sc">|&gt;</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_wider</span>(<span class="at">names_from  =</span> card_label,</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>                <span class="at">values_from =</span> minute) <span class="sc">|&gt;</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>red_counts <span class="ot">&lt;-</span> events <span class="sc">|&gt;</span> </span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(game_id) <span class="sc">|&gt;</span> </span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">has_red_card =</span> <span class="fu">any</span>(type <span class="sc">==</span> <span class="st">"red_card"</span>), </span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>        <span class="at">home_red_cards =</span> <span class="fu">sum</span>(type <span class="sc">==</span> <span class="st">"red_card"</span> <span class="sc">&amp;</span> side <span class="sc">==</span> <span class="st">"home"</span>),</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>        <span class="at">away_red_cards =</span> <span class="fu">sum</span>(type <span class="sc">==</span> <span class="st">"red_card"</span> <span class="sc">&amp;</span> side <span class="sc">==</span> <span class="st">"away"</span>),</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>        <span class="at">total_red_cards =</span> <span class="fu">sum</span>(type <span class="sc">==</span> <span class="st">"red_card"</span>)</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>events <span class="ot">&lt;-</span> events <span class="sc">|&gt;</span> </span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(red_minutes, <span class="at">by =</span> <span class="st">"game_id"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(red_counts, <span class="at">by =</span> <span class="st">"game_id"</span>)</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="co">#  Merged data sets --------------------------------------------------</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a><span class="co">#---------------------------------------------------------------------</span></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>df_all <span class="ot">&lt;-</span> games <span class="sc">|&gt;</span> </span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(events, <span class="at">by =</span> <span class="st">"game_id"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>        <span class="at">has_red_card =</span> <span class="fu">replace_na</span>(has_red_card, <span class="cn">FALSE</span>), </span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>        <span class="at">home_red_cards =</span> <span class="fu">replace_na</span>(home_red_cards, <span class="dv">0</span>), </span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>        <span class="at">away_red_cards =</span> <span class="fu">replace_na</span>(away_red_cards, <span class="dv">0</span>), </span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>        <span class="at">total_red_cards =</span> <span class="fu">replace_na</span>(total_red_cards, <span class="dv">0</span>)</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>df_simple <span class="ot">&lt;-</span> games <span class="sc">|&gt;</span> </span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(red_counts, <span class="at">by =</span> <span class="st">"game_id"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>        <span class="at">has_red_card =</span> <span class="fu">replace_na</span>(has_red_card, <span class="cn">FALSE</span>), </span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>        <span class="at">home_red_cards =</span> <span class="fu">replace_na</span>(home_red_cards, <span class="dv">0</span>), </span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>        <span class="at">away_red_cards =</span> <span class="fu">replace_na</span>(away_red_cards, <span class="dv">0</span>), </span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>        <span class="at">total_red_cards =</span> <span class="fu">replace_na</span>(total_red_cards, <span class="dv">0</span>)</span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<hr>
+</section>
+<section id="eda" class="level2">
+<h2 class="anchored" data-anchor-id="eda">4 EDA</h2>
+<ul>
+<li><p><strong>Key observations from EDA:</strong></p>
+<ul>
+<li><p><strong>Goals:</strong></p>
+<ul>
+<li><p>Goals seem to follow a Poisson distribution (low count data) and more home goals are usually scored.</p></li>
+<li><p>Amount of goals differs by league.</p></li>
+<li><p>No time trend in the average number of goals on each match day exists across seasons or within seasons.</p></li>
+<li><p>Withing games a slight positive trend in when goals are scored seems to exist (e.g.&nbsp;more goals in second half than in first half).</p></li>
+</ul></li>
+<li><p><strong>Red cards:</strong></p>
+<ul>
+<li><p>Most games have no red cards, range of total red cards is 0 to 5.</p></li>
+<li><p>Red cards do not differ by sides.</p></li>
+<li><p>Average number of red cards differs greatly by league.</p></li>
+<li><p>Time trend in the average number of red cards on each match day does not exist across seasons, but does exist within seasons. Within seasons the trend is mostly negative, meaning that fewer red cards are given towards the end of each season.</p></li>
+<li><p>Within games a cleara positive trend in when red cards are given exists (number of red cards given increases steadily over the course of the game).</p></li>
+</ul></li>
+</ul></li>
+<li><p><strong>Conclusions from EDA:</strong></p>
+<ul>
+<li><p>Should model goals with Poisson distribution (check for overdispersion –&gt; negative binomial distribution).</p></li>
+<li><p>Have to control for league, time trend within season and time within games to avoid running into omitted variable bias. As an example of what could be an omitted variable:</p>
+<ul>
+<li>It could be the case that the Ligue 1 has more goals and red cards on average than other leagues, but due to another factor such as “culture/intensity of games”, i.e.&nbsp;both red cards and goals are correlated with “culture/intensity of games”. This factor would then represent an omitted variable and would bias our estimate of the effect of red cards on goals.</li>
+</ul></li>
+<li><p>However, omitted variable bias could still persist, sincewe are limited by the data we have. As another example of an omitted variable we might not be able to control for:</p>
+<ul>
+<li>It probably is the case that fatigue of players increases over the course of a game. It is also very likely that fatigue is correlated with both red cards and goals. Hence, fatigue would be an omitted variable which we might not be able to control for and would thus bias our estimate. (we would wrongly attribute the positive effect of fatigue on both red cards and goals to the effect of red cards on goals).</li>
+</ul></li>
+<li><p>Although no plot for the average number of goals or red cards on a team basis was created, it is likely that differences exist across teams as well and that team-specific effects should probably be controlled for.</p></li>
+</ul></li>
+</ul>
+<section id="goals" class="level3">
+<h3 class="anchored" data-anchor-id="goals">4.1 Goals</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total goals</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_goals)) <span class="sc">+</span> </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-total-goals-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Home vs. Away goals (more home goals)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(home_goals, away_goals), <span class="at">names_to =</span> <span class="st">"side"</span>, </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">values_to =</span> <span class="st">"goals"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> goals, <span class="at">fill =</span> side)) <span class="sc">+</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">position =</span> <span class="st">"identity"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">binwidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-home-away-goals-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total goals by league (league effects seem to exist)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_goals, <span class="at">color =</span> competition)) <span class="sc">+</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>, <span class="at">adjust =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-total-goals-league-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_goals, <span class="at">y =</span> competition)) <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-total-goals-league-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper dataset</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>df_simple_avg_goals <span class="ot">&lt;-</span> df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(season, date) <span class="sc">|&gt;</span> </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">avg_total_goals =</span> <span class="fu">mean</span>(total_goals)) <span class="sc">|&gt;</span> </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Trend in total goals over time across seasons (no effect)</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>df_simple_avg_goals <span class="sc">|&gt;</span> </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> avg_total_goals)) <span class="sc">+</span> </span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-avg-total-goals-trend-across-seasons-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(avg_total_goals <span class="sc">~</span> date, <span class="at">data =</span> df_simple_avg_goals))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term         estimate std.error statistic p.value
+  &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 (Intercept) 2.23      0.766         2.92  0.00361
+2 date        0.0000210 0.0000411     0.511 0.609  </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Trend in total goals over time within seasons (no effect)</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>df_simple_avg_goals <span class="sc">|&gt;</span> </span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> avg_total_goals, <span class="at">colour =</span> season, <span class="at">group =</span> season)) <span class="sc">+</span> </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-avg-total-goals-trend-within-seasons-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(avg_total_goals <span class="sc">~</span> date <span class="sc">*</span> season, <span class="at">data =</span> df_simple_avg_goals))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 5
+   term                   estimate std.error statistic p.value
+   &lt;chr&gt;                     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+ 1 (Intercept)          -16.7      10.2         -1.63   0.103 
+ 2 date                   0.00108   0.000572     1.88   0.0600
+ 3 season2019/2020       15.6      18.4          0.845  0.399 
+ 4 season2020/2021       22.4      12.5          1.79   0.0733
+ 5 season2021/2022       10.8      14.6          0.738  0.461 
+ 6 season2022/2023        8.33     14.2          0.585  0.559 
+ 7 date:season2019/2020  -0.000874  0.00102     -0.859  0.391 
+ 8 date:season2020/2021  -0.00124   0.000690    -1.80   0.0722
+ 9 date:season2021/2022  -0.000627  0.000793    -0.790  0.429 
+10 date:season2022/2023  -0.000511  0.000767    -0.667  0.505 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Timing of goals within games</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>df_all <span class="sc">|&gt;</span> </span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"goal"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> minute)) <span class="sc">+</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">binwidth =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-goals-within-games-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="red-cards" class="level3">
+<h3 class="anchored" data-anchor-id="red-cards">4.2 Red Cards</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Total red cards</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_red_cards)) <span class="sc">+</span> </span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_bar</span>(<span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-total-red-cards-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Home vs. Away red cards (similar home and away red cards)</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="fu">c</span>(home_red_cards, away_red_cards), <span class="at">names_to =</span> <span class="st">"side"</span>, </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>                 <span class="at">values_to =</span> <span class="st">"red_cards"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> red_cards, <span class="at">fill =</span> side)) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">position =</span> <span class="st">"identity"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">binwidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-home-away-red-cards-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Average number of red cards by league (league effects exist)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(competition) <span class="sc">|&gt;</span> </span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">avg_red_cards =</span> <span class="fu">mean</span>(total_red_cards, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>        <span class="at">se            =</span> <span class="fu">sd</span>(total_red_cards, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="fu">n</span>())</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">ymin =</span> avg_red_cards <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se, </span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">ymax =</span> avg_red_cards <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>        <span class="at">competition =</span> <span class="fu">fct_reorder</span>(competition, avg_red_cards)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> competition, <span class="at">y =</span> avg_red_cards)) <span class="sc">+</span></span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_col</span>(<span class="at">width =</span> .<span class="dv">7</span>, <span class="at">fill =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> ymin, <span class="at">ymax =</span> ymax),</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>                  <span class="at">width =</span> .<span class="dv">25</span>) <span class="sc">+</span></span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coord_flip</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-avg-red-cards-league-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Helper dataset</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>df_simple_avg_red_cards <span class="ot">&lt;-</span> df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(season, date) <span class="sc">|&gt;</span> </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">avg_red_cards =</span> <span class="fu">mean</span>(total_red_cards)) <span class="sc">|&gt;</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Trend in average number of red cards over time across seasons (no effect)</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>df_simple_avg_red_cards <span class="sc">|&gt;</span> </span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> avg_red_cards)) <span class="sc">+</span> </span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-avg-red-cards-trend-across-seasons-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(avg_red_cards <span class="sc">~</span> date, <span class="at">data =</span> df_simple_avg_red_cards))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term           estimate std.error statistic p.value
+  &lt;chr&gt;             &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 (Intercept)  0.356      0.219         1.63    0.104
+2 date        -0.00000917 0.0000118    -0.781   0.435</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Trend in total goals over time within seasons (all seasons apart from</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 2018/2019 seem to have a declining number of average red cards over the season)</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>df_simple_avg_red_cards <span class="sc">|&gt;</span> </span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> avg_red_cards, <span class="at">colour =</span> season, <span class="at">group =</span> season)) <span class="sc">+</span> </span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span> </span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-avg-red-cards-within-seasons-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(avg_red_cards <span class="sc">~</span> date <span class="sc">*</span> season, <span class="at">data =</span> df_simple_avg_red_cards))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10 × 5
+   term                  estimate std.error statistic p.value
+   &lt;chr&gt;                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+ 1 (Intercept)          -5.66      2.92         -1.94 0.0524 
+ 2 date                  0.000327  0.000163      2.01 0.0449 
+ 3 season2019/2020      13.5       5.25          2.56 0.0105 
+ 4 season2020/2021      11.0       3.56          3.10 0.00197
+ 5 season2021/2022       8.78      4.16          2.11 0.0351 
+ 6 season2022/2023       9.41      4.05          2.32 0.0204 
+ 7 date:season2019/2020 -0.000743  0.000290     -2.57 0.0104 
+ 8 date:season2020/2021 -0.000607  0.000196     -3.09 0.00204
+ 9 date:season2021/2022 -0.000481  0.000226     -2.13 0.0334 
+10 date:season2022/2023 -0.000511  0.000218     -2.34 0.0194 </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Timing of red cards within games</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>df_all <span class="sc">|&gt;</span> </span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"red_card"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> minute)) <span class="sc">+</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">binwidth =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/eda-red-cards-within-games-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="simple-across-matches-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="simple-across-matches-comparison">5 Simple <strong>across-matches</strong> comparison</h2>
+<p><em>A quick “bird’s-eye” baseline before diving into within-match dynamics.</em></p>
+<p>Games are split into two buckets—those that contain <strong>at least one</strong> red card and those that do not—and the <strong>total number of goals</strong> in each match is compared. Because the timing of cards (and many other unobserved factors such as match intensity) is ignored, this exercise is highly susceptible to <strong>endogeneity</strong>: matches with reds are unlikely to be identical in every other respect to matches without them. Factors such as match intensity is likely to be an omitted variable and will biase our estimate. Still, the exercise helps anchor expectations.</p>
+<section id="difference-in-means-no-controls" class="level3">
+<h3 class="anchored" data-anchor-id="difference-in-means-no-controls">5.1 Difference in means — <em>no controls</em></h3>
+<ul>
+<li><p><strong>Model (OLS)</strong></p>
+<p><span class="math display">\[
+    \text{TotalGoals}_i=\alpha+\beta\;\mathbf 1_{\{\text{RedCard}_i\}}+\varepsilon_i
+\]</span></p>
+<p>– single binary regressor.</p></li>
+<li><p><strong>Assumptions</strong> Matches independent; treatment assignment ignorable (clearly violated).</p></li>
+<li><p><strong>Quick findings</strong></p>
+<ul>
+<li><p>Histograms, densities and box-plots show only a small visual shift.</p></li>
+<li><p>Point estimate <span class="math inline">\(\hat{\beta}\approx0.05\)</span> goals, <em>p</em> &gt; 0.05 → <strong>no significant effect</strong>.</p></li>
+<li><p>Interpretation discouraged because of omitted-variable bias.</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Histogram</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_goals, <span class="at">fill =</span> has_red_card)) <span class="sc">+</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>(<span class="at">position =</span> <span class="st">"identity"</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">binwidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/simple-across-compare-no-controls-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Density differs slightly</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> total_goals, <span class="at">color =</span> has_red_card)) <span class="sc">+</span> </span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_density</span>(<span class="at">linewidth =</span> <span class="fl">0.75</span>, <span class="at">adjust =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="cf">function</span>(x) <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(x)), <span class="fu">ceiling</span>(<span class="fu">max</span>(x)), </span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>                                                <span class="at">by =</span> <span class="dv">1</span>), </span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>                       <span class="at">minor_breaks =</span> <span class="cn">NULL</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/simple-across-compare-no-controls-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Boxplot shows that total goals might differ by whether at least one red card </span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="co"># occurred in a game</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>df_simple <span class="sc">|&gt;</span> </span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> has_red_card, <span class="at">y =</span> total_goals)) <span class="sc">+</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_boxplot</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/simple-across-compare-no-controls-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Regression denies any effect of at least on red card on total goals on the </span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 5% level</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(total_goals <span class="sc">~</span> has_red_card, <span class="at">data =</span> df_simple))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term             estimate std.error statistic p.value
+  &lt;chr&gt;               &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+1 (Intercept)        2.64      0.0125    211.     0    
+2 has_red_cardTRUE   0.0511    0.0313      1.63   0.103</code></pre>
+</div>
+</div>
+</section>
+<section id="difference-in-means-with-controls" class="level3">
+<h3 class="anchored" data-anchor-id="difference-in-means-with-controls">5.2 Difference in means — <em>with controls</em></h3>
+<ul>
+<li><p><strong>Model</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+  \text{TotalGoals}_i
+    &amp;= \alpha
+       + \beta\,\mathbf{1}_{\{\text{RedCard}_i\}}
+       + \gamma_1\,\text{Comp}_i
+       + \gamma_2\,\text{HomeTeam}_i
+       + \gamma_3\,\text{AwayTeam}_i \\[2pt]
+    &amp;\quad + \gamma_4\,\text{Season}_i
+           + \gamma_5\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr)
+           + \varepsilon_i .
+\end{aligned}
+\]</span></p></li>
+<li><p><strong>Assumptions</strong> Same as 5.1 but now conditional on observable league/team/season factors.</p></li>
+<li><p><strong>Results outline</strong></p>
+<ul>
+<li><p><span class="math inline">\(\hat{\beta}\approx0.07\)</span> goals <strong>per match</strong>, <em>p</em> &lt; 0.05 (statistically significant).</p></li>
+<li><p>Suggests red-card matches are slightly higher-scoring <strong>after</strong> controlling for league and team strength.</p></li>
+<li><p>Still ignores <em>when</em> the card occurred and within-match causality.</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Regression finds statistically significant, positive effect of approximately </span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 0.07 more goals for matches that had at least one red card.</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(</span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lm</span>(total_goals <span class="sc">~</span> has_red_card <span class="sc">+</span> competition <span class="sc">+</span> home_team <span class="sc">+</span> away_team <span class="sc">+</span> </span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>           season <span class="sc">+</span> season<span class="sc">:</span>day_in_season, </span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">data =</span> df_simple)</span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 512 × 5
+   term                               estimate std.error statistic  p.value
+   &lt;chr&gt;                                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)                          2.65      0.416     6.37   1.92e-10
+ 2 has_red_cardTRUE                     0.0698    0.0313    2.23   2.58e- 2
+ 3 competition2. Bundesliga, Germany    0.0411    0.694     0.0593 9.53e- 1
+ 4 competitionChampionship, England    -0.292     0.656    -0.445  6.56e- 1
+ 5 competitionLeague One, England      -0.219     0.643    -0.341  7.33e- 1
+ 6 competitionLeague Two, England      -0.597     0.633    -0.943  3.46e- 1
+ 7 competitionPremier League, England  -0.277     0.670    -0.414  6.79e- 1
+ 8 competitionLigue 1, France           0.0501    0.122     0.412  6.81e- 1
+ 9 competitionPrimera, Spain            0.874     0.670     1.30   1.92e- 1
+10 competitionSerie A, Italy           -0.293     0.659    -0.445  6.57e- 1
+# ℹ 502 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="poisson-glm-count-model-with-controls" class="level3">
+<h3 class="anchored" data-anchor-id="poisson-glm-count-model-with-controls">5.3 Poisson GLM — <em>count model with controls</em></h3>
+<ul>
+<li><p><strong>Model</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+  \text{TotalGoals}_i &amp;\sim \text{Poisson}(\mu_i), \\[4pt]
+  \log \mu_i
+    &amp;= \alpha
+       + \beta\,\mathbf{1}_{\{\text{RedCard}_i\}}
+       + \gamma_1\,\text{Comp}_i
+       + \gamma_2\,\text{HomeTeam}_i \\[2pt]
+    &amp;\quad + \gamma_3\,\text{AwayTeam}_i
+           + \gamma_4\,\text{Season}_i
+           + \gamma_5\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr).
+\end{aligned}
+\]</span></p></li>
+<li><p><strong>Diagnostics</strong></p>
+<ul>
+<li>Poisson distribution more appropriate due to count nature of total number of goals data</li>
+<li>Pearson dispersion <span class="math inline">\(\hat{\phi}=0.98\)</span> ⇒ <strong>no over-dispersion</strong>; Poisson suitable.</li>
+</ul></li>
+<li><p><strong>Results outline</strong></p>
+<ul>
+<li><span class="math inline">\(\exp(\hat{\beta})\approx1.026\)</span> → matches with ≥ 1 red card have <strong>≈ 2.6 % more goals</strong> on average, <em>p</em> &lt; 0.05 (statistically significant).</li>
+</ul></li>
+<li><p><strong>Limitations (shared with 5.1 &amp; 5.2)</strong></p>
+<ul>
+<li>Still cross-sectional; cannot say whether the red card <em>caused</em> the extra goals or both stem from some unmeasured match characteristic.</li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Poisson GLM</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>pois_fit <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    total_goals <span class="sc">~</span> has_red_card <span class="sc">+</span> competition <span class="sc">+</span> home_team <span class="sc">+</span> away_team <span class="sc">+</span> </span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>        season <span class="sc">+</span> season<span class="sc">:</span>day_in_season,</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">poisson</span>(), </span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> df_simple</span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Check over-dispersion (0.976, so close to 1 --&gt; Poisson distributional </span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a><span class="co"># assumption is fine, do not need to switch to negative binomial)</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a><span class="fu">sum</span>(<span class="fu">residuals</span>(pois_fit, <span class="at">type =</span> <span class="st">"pearson"</span>)<span class="sc">^</span><span class="dv">2</span>) <span class="sc">/</span> pois_fit<span class="sc">$</span>df.residual</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 0.9756669</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Exponentiated coefficients (controlling for competition, teams and season </span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="co"># effects games with a red card have 2.6% more goals (statistically </span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="co"># significant))</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(pois_fit, <span class="at">exponentiate =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 512 × 5
+   term                               estimate std.error statistic       p.value
+   &lt;chr&gt;                                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+ 1 (Intercept)                           2.66     0.161     6.09   0.00000000114
+ 2 has_red_cardTRUE                      1.03     0.0119    2.19   0.0284       
+ 3 competition2. Bundesliga, Germany     1.01     0.262     0.0317 0.975        
+ 4 competitionChampionship, England      0.870    0.265    -0.526  0.599        
+ 5 competitionLeague One, England        0.896    0.260    -0.422  0.673        
+ 6 competitionLeague Two, England        0.774    0.256    -1.00   0.317        
+ 7 competitionPremier League, England    0.876    0.270    -0.489  0.625        
+ 8 competitionLigue 1, France            1.02     0.0478    0.357  0.721        
+ 9 competitionPrimera, Spain             1.35     0.249     1.22   0.222        
+10 competitionSerie A, Italy             0.891    0.255    -0.454  0.650        
+# ℹ 502 more rows</code></pre>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="within-game-comparison" class="level2">
+<h2 class="anchored" data-anchor-id="within-game-comparison">6 Within game comparison</h2>
+<p>Games with exactly one red card are compared for the goals scored before and after the red card (serves as close to a valid counterfactual as possible).<br>
+A simple paired test (§ 6.2) shows that the number of goals per minute scored <strong>increases</strong> once a red card is shown, but it weights all time windows after a red card is shown equally.<br>
+A Poisson GLM with a log-exposure offset (§ 6.3) corrects that imbalance: after controlling for card timing, league fixed effects, team fixed effects and season fixed effects and trends, the <em>per-minute goal rate</em> is <strong>≈ 55 % higher</strong> when a team is reduced to ten players. Cluster-robust errors and a dispersion check confirm the finding’s robustness.<br>
+Therefore, both models agree (although more weight should be placed on the conclusion of the Poisson GLM with a log-exposure offset since it is more appropriate) that red cards lead to more goals.</p>
+<section id="prepare-data-for-comparisons" class="level3">
+<h3 class="anchored" data-anchor-id="prepare-data-for-comparisons">6.1 Prepare data for comparisons</h3>
+<p>For simplicity, only matches with exactly one red card throughout the whole match are considered.<br>
+Furthermore, two separate datasets were created:</p>
+<ol type="1">
+<li><strong>Full</strong> – drop matches with a 90′ card (since a card at 90’ has no “post” exposure).</li>
+<li><strong>Trim &lt; 80′</strong> – smaller sample omitting cards in the 80–89′ range as well.</li>
+</ol>
+<ul>
+<li><p>The second dataset is used for the paired pre/post comparison since the post number of goals per minute rate varies wildly (is unreasonably large if a goal is scored after the red card when the minute count is low).</p></li>
+<li><p>The first dataset is used for the Poisson GLM with a log-exposure offset, since this model automatically downweights observations with low exposure, i.e.&nbsp;with a low minute count, hence no removal is necessary.</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>df_all_one_red <span class="ot">&lt;-</span> df_all <span class="sc">|&gt;</span> </span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(total_red_cards <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rename</span>(<span class="at">red_card_minute =</span> red_card1_minute) <span class="sc">|&gt;</span> </span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(red_card2_minute, red_card3_minute, red_card4_minute, </span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>              red_card5_minute, has_red_card, home_red_cards, away_red_cards, </span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>              total_red_cards)) <span class="sc">|&gt;</span> </span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(game_id) <span class="sc">|&gt;</span> </span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>        <span class="at">goals_pre   =</span> <span class="fu">sum</span>(type <span class="sc">==</span> <span class="st">"goal"</span> <span class="sc">&amp;</span> minute <span class="sc">&lt;</span> red_card_minute),</span>
+<span id="cb36-10"><a href="#cb36-10" aria-hidden="true" tabindex="-1"></a>        <span class="at">goals_post    =</span> <span class="fu">sum</span>(type <span class="sc">==</span> <span class="st">"goal"</span> <span class="sc">&amp;</span> minute <span class="sc">&gt;</span> red_card_minute),</span>
+<span id="cb36-11"><a href="#cb36-11" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-12"><a href="#cb36-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">minutes_pre =</span> <span class="fu">first</span>(red_card_minute),</span>
+<span id="cb36-13"><a href="#cb36-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">minutes_post  =</span> <span class="dv">90</span> <span class="sc">-</span> <span class="fu">first</span>(red_card_minute),</span>
+<span id="cb36-14"><a href="#cb36-14" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb36-15"><a href="#cb36-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">rate_pre    =</span> goals_pre <span class="sc">/</span> minutes_pre, </span>
+<span id="cb36-16"><a href="#cb36-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">rate_post   =</span> goals_post  <span class="sc">/</span> minutes_post, </span>
+<span id="cb36-17"><a href="#cb36-17" aria-hidden="true" tabindex="-1"></a>        <span class="at">rates_diff =</span> rate_post <span class="sc">-</span> rate_pre</span>
+<span id="cb36-18"><a href="#cb36-18" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb36-19"><a href="#cb36-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb36-20"><a href="#cb36-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-21"><a href="#cb36-21" aria-hidden="true" tabindex="-1"></a>df_rates_all <span class="ot">&lt;-</span> df_all_one_red <span class="sc">|&gt;</span> </span>
+<span id="cb36-22"><a href="#cb36-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(red_card_minute <span class="sc">!=</span> <span class="dv">90</span>) <span class="sc">|&gt;</span> <span class="co"># exclude matches where the red card </span></span>
+<span id="cb36-23"><a href="#cb36-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># happened in minute 90 (can't use for estimation of what happens after a </span></span>
+<span id="cb36-24"><a href="#cb36-24" aria-hidden="true" tabindex="-1"></a>    <span class="co"># red card is given)</span></span>
+<span id="cb36-25"><a href="#cb36-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(game_id) <span class="sc">|&gt;</span> </span>
+<span id="cb36-26"><a href="#cb36-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb36-27"><a href="#cb36-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">across</span>(<span class="sc">-</span><span class="fu">c</span>(minute, side, type), first)</span>
+<span id="cb36-28"><a href="#cb36-28" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb36-29"><a href="#cb36-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb36-30"><a href="#cb36-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-31"><a href="#cb36-31" aria-hidden="true" tabindex="-1"></a>df_rates_all_long <span class="ot">&lt;-</span> df_rates_all <span class="sc">|&gt;</span> </span>
+<span id="cb36-32"><a href="#cb36-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb36-33"><a href="#cb36-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"rate_pre"</span>, <span class="st">"rate_post"</span>, </span>
+<span id="cb36-34"><a href="#cb36-34" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"goals_pre"</span>, <span class="st">"goals_post"</span>, </span>
+<span id="cb36-35"><a href="#cb36-35" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"minutes_pre"</span>, <span class="st">"minutes_post"</span>), </span>
+<span id="cb36-36"><a href="#cb36-36" aria-hidden="true" tabindex="-1"></a>        <span class="at">names_to     =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"period"</span>), </span>
+<span id="cb36-37"><a href="#cb36-37" aria-hidden="true" tabindex="-1"></a>        <span class="at">names_pattern =</span> <span class="st">"(.*)_(pre|post)"</span></span>
+<span id="cb36-38"><a href="#cb36-38" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb36-39"><a href="#cb36-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">as_factor</span>(period)) <span class="sc">|&gt;</span> </span>
+<span id="cb36-40"><a href="#cb36-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(rates_diff))</span>
+<span id="cb36-41"><a href="#cb36-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-42"><a href="#cb36-42" aria-hidden="true" tabindex="-1"></a>df_rates_80 <span class="ot">&lt;-</span> df_all_one_red <span class="sc">|&gt;</span> </span>
+<span id="cb36-43"><a href="#cb36-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(red_card_minute <span class="sc">&lt;</span> <span class="dv">80</span>) <span class="sc">|&gt;</span> <span class="co"># exclude matches where the red card </span></span>
+<span id="cb36-44"><a href="#cb36-44" aria-hidden="true" tabindex="-1"></a>    <span class="co"># happened after minute 80</span></span>
+<span id="cb36-45"><a href="#cb36-45" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(game_id) <span class="sc">|&gt;</span> </span>
+<span id="cb36-46"><a href="#cb36-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(</span>
+<span id="cb36-47"><a href="#cb36-47" aria-hidden="true" tabindex="-1"></a>        <span class="fu">across</span>(<span class="sc">-</span><span class="fu">c</span>(minute, side, type), first)</span>
+<span id="cb36-48"><a href="#cb36-48" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb36-49"><a href="#cb36-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ungroup</span>()</span>
+<span id="cb36-50"><a href="#cb36-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-51"><a href="#cb36-51" aria-hidden="true" tabindex="-1"></a>df_rates_80_long <span class="ot">&lt;-</span> df_rates_80 <span class="sc">|&gt;</span> </span>
+<span id="cb36-52"><a href="#cb36-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pivot_longer</span>(</span>
+<span id="cb36-53"><a href="#cb36-53" aria-hidden="true" tabindex="-1"></a>        <span class="at">cols =</span> <span class="fu">c</span>(<span class="st">"rate_pre"</span>, <span class="st">"rate_post"</span>, </span>
+<span id="cb36-54"><a href="#cb36-54" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"goals_pre"</span>, <span class="st">"goals_post"</span>, </span>
+<span id="cb36-55"><a href="#cb36-55" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"minutes_pre"</span>, <span class="st">"minutes_post"</span>), </span>
+<span id="cb36-56"><a href="#cb36-56" aria-hidden="true" tabindex="-1"></a>        <span class="at">names_to     =</span> <span class="fu">c</span>(<span class="st">".value"</span>, <span class="st">"period"</span>), </span>
+<span id="cb36-57"><a href="#cb36-57" aria-hidden="true" tabindex="-1"></a>        <span class="at">names_pattern =</span> <span class="st">"(.*)_(pre|post)"</span></span>
+<span id="cb36-58"><a href="#cb36-58" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">|&gt;</span> </span>
+<span id="cb36-59"><a href="#cb36-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">period =</span> <span class="fu">as_factor</span>(period)) <span class="sc">|&gt;</span> </span>
+<span id="cb36-60"><a href="#cb36-60" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(rates_diff))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="paired-prepost-comparison" class="level3">
+<h3 class="anchored" data-anchor-id="paired-prepost-comparison">6.2 Paired pre/post comparison</h3>
+<p><em>(linear model on the within-match difference of goal-per-minute rates)</em></p>
+<ul>
+<li><p><strong>Model specification</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+  d_i
+    &amp;= \alpha
+       + \beta_1\,\text{RedMin}_i
+       + \beta_2\,\text{Comp}_i
+       + \beta_3\,\text{HomeTeam}_i
+       + \beta_4\,\text{AwayTeam}_i \\[2pt]
+    &amp;\quad + \beta_5\,\text{Season}_i
+           + \beta_6\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr)
+           + \varepsilon_i .
+\end{aligned}
+\]</span></p></li>
+</ul>
+<p>where</p>
+<p><span class="math display">\[
+d_i=\text{rate}_{\text{post}}-\text{rate}_{\text{pre}},\qquad
+\text{rate}_{\text{pre}}=\frac{g_{\text{pre}}}{m_{\text{pre}}},\qquad
+\text{rate}_{\text{post}}=\frac{g_{\text{post}}}{m_{\text{post}}}
+\]</span></p>
+<p>with <span class="math inline">\(g_{\bullet}\)</span> = goals, <span class="math inline">\(m_{\bullet}\)</span> = minutes.</p>
+<ul>
+<li><strong>Key assumptions</strong>
+<ol type="1">
+<li>The pre-card rate is a valid counter-factual for the post-card rate, i.e.&nbsp;match would have evolved with same rate as before the red card had the red card not happened.</li>
+<li>Independence across matches</li>
+<li>Normality of <span class="math inline">\(d_i\)</span> (checked via histogram).</li>
+<li>In estimation of average difference every match receives equal weight, regardless of how long the “post” window is, i.e.&nbsp;exposure is ignored (e.g.&nbsp;difference in rates for a match where the red card occurred in the 15’ minute is weighted the same as the difference in rates for a match where the red card occurred in the 75’ minute).</li>
+</ol></li>
+</ul>
+<!-- -->
+<ul>
+<li><p><strong>Results</strong></p>
+<ul>
+<li><p>Mean difference <span class="math inline">\(\hat{\alpha}\)</span> = 0.0126 goals ∙ min<span class="math inline">\(^{-1}\)</span></p></li>
+<li><p>t-statistic = 12.34; clustered <em>p</em>-value ≈ 0</p></li>
+<li><p>After adjusting for card minute, competition, home/away teams, and season, the coefficient on <span class="math inline">\(d_i\)</span> no longer remains significant at the 5 % level. But this is only due to baseline issues with the dummy variables.</p></li>
+<li><p>When comparing coefficients in the stacked linear model going from no controls to all relevant controls, the coefficient does not change, meaning that the effect is robust (makes sense since most controls are constant across games anyways).</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Difference in pre/post red card goals per minute rates looks approximately </span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a><span class="co"># normal</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>df_rates_80 <span class="sc">|&gt;</span> </span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> rates_diff)) <span class="sc">+</span> </span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_histogram</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="master_files/figure-html/within-compare-lm-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Test whether rates_diff is significantly different from zero (linear </span></span>
+<span id="cb38-2"><a href="#cb38-2" aria-hidden="true" tabindex="-1"></a><span class="co"># regression is equivalent to paired t-test)</span></span>
+<span id="cb38-3"><a href="#cb38-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb38-4"><a href="#cb38-4" aria-hidden="true" tabindex="-1"></a><span class="co"># No controls</span></span>
+<span id="cb38-5"><a href="#cb38-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(rates_diff <span class="sc">~</span> <span class="dv">1</span>, <span class="at">data =</span> df_rates_80))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 1 × 5
+  term        estimate std.error statistic  p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+1 (Intercept)   0.0126  0.000946      13.3 1.72e-38</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Control for all mentioned factors in EDA</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Omitted team fixed effects for readability</span></span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(rates_diff <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> red_card_minute <span class="sc">+</span> competition <span class="sc">+</span> </span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>            home_team <span class="sc">+</span> away_team <span class="sc">+</span> season <span class="sc">+</span> season<span class="sc">:</span>day_in_season, </span>
+<span id="cb40-5"><a href="#cb40-5" aria-hidden="true" tabindex="-1"></a>        <span class="at">data =</span> df_rates_80)) <span class="sc">|&gt;</span></span>
+<span id="cb40-6"><a href="#cb40-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(term, <span class="st">"team"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 20 × 5
+   term                                  estimate std.error statistic p.value
+   &lt;chr&gt;                                    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+ 1 (Intercept)                         0.0431     0.0258       1.67    0.0954
+ 2 red_card_minute                     0.000133   0.0000560    2.38    0.0173
+ 3 competition2. Bundesliga, Germany  -0.00284    0.0442      -0.0642  0.949 
+ 4 competitionChampionship, England   -0.000685   0.0560      -0.0122  0.990 
+ 5 competitionLeague One, England     -0.00373    0.0545      -0.0685  0.945 
+ 6 competitionLeague Two, England     -0.00956    0.0532      -0.180   0.857 
+ 7 competitionPremier League, England -0.0229     0.0578      -0.396   0.692 
+ 8 competitionLigue 1, France          0.00287    0.00882      0.326   0.745 
+ 9 competitionPrimera, Spain          -0.0264     0.0558      -0.474   0.636 
+10 competitionSerie A, Italy          -0.0264     0.0562      -0.469   0.639 
+11 competition1. Bundesliga, Germany  -0.0284     0.0469      -0.605   0.545 
+12 season2019/2020                    -0.00696    0.00757     -0.919   0.358 
+13 season2020/2021                    -0.00207    0.00773     -0.268   0.789 
+14 season2021/2022                     0.00725    0.00704      1.03    0.303 
+15 season2022/2023                    -0.00207    0.00707     -0.292   0.770 
+16 season2018/2019:day_in_season       0.0000405  0.0000282    1.43    0.152 
+17 season2019/2020:day_in_season       0.0000559  0.0000430    1.30    0.193 
+18 season2020/2021:day_in_season       0.0000216  0.0000247    0.875   0.382 
+19 season2021/2022:day_in_season      -0.0000355  0.0000287   -1.24    0.216 
+20 season2022/2023:day_in_season       0.00000306 0.0000271    0.113   0.910 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Do comparison in long format to get baseline rate (pre rate) and difference </span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="co"># to it (post rate) to get a sense of magnitude of difference</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a><span class="co"># No controls</span></span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(<span class="fu">lm</span>(rate <span class="sc">~</span> period, <span class="at">data =</span> df_rates_80_long))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 5
+  term        estimate std.error statistic   p.value
+  &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+1 (Intercept)   0.0253  0.000683      37.0 1.07e-255
+2 periodpost    0.0126  0.000966      13.0 8.34e- 38</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Control for all mentioned factors in EDA</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>lmCR <span class="ot">&lt;-</span> <span class="fu">lm</span>(rate <span class="sc">~</span> period <span class="sc">+</span> red_card_minute <span class="sc">+</span> competition <span class="sc">+</span> </span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>               home_team <span class="sc">+</span> away_team <span class="sc">+</span> season <span class="sc">+</span> season<span class="sc">:</span>day_in_season, </span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>           <span class="at">data =</span> df_rates_80_long)</span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Cluster-robust SEs at the match level to get correct inference </span></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="co"># (since "pre" and "post" observations are correlated for each match)</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Period indicator (pre/post) is statistically significant on the 5% level</span></span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a><span class="co"># (Output hidden since too many coefficients)</span></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coeftest</span>(lmCR, <span class="at">vcov =</span> <span class="fu">vcovCL</span>(lmCR, <span class="at">cluster =</span> <span class="sc">~</span> game_id))</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Omitted team fixed effects for readability</span></span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(lmCR) <span class="sc">|&gt;</span> </span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(term, <span class="st">"team"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21 × 5
+   term                                estimate std.error statistic  p.value
+   &lt;chr&gt;                                  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)                         0.0196   0.0132        1.49  1.37e- 1
+ 2 periodpost                          0.0126   0.000954     13.2   1.48e-38
+ 3 red_card_minute                     0.000145 0.0000285     5.09  3.74e- 7
+ 4 competition2. Bundesliga, Germany   0.00435  0.0225        0.193 8.47e- 1
+ 5 competitionChampionship, England   -0.0160   0.0285       -0.562 5.74e- 1
+ 6 competitionLeague One, England     -0.0151   0.0278       -0.545 5.86e- 1
+ 7 competitionLeague Two, England     -0.0203   0.0271       -0.748 4.54e- 1
+ 8 competitionPremier League, England -0.0281   0.0295       -0.955 3.40e- 1
+ 9 competitionLigue 1, France          0.00986  0.00449       2.20  2.82e- 2
+10 competitionPrimera, Spain           0.00378  0.0284        0.133 8.94e- 1
+# ℹ 11 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="poisson-glm-with-log-exposure-offset" class="level3">
+<h3 class="anchored" data-anchor-id="poisson-glm-with-log-exposure-offset">6.3 Poisson GLM with log-exposure offset</h3>
+<p><em>(count model respecting unequal time windows and match clustering)</em></p>
+<ul>
+<li><p><strong>Model specification</strong></p>
+<p><span class="math display">\[
+\begin{aligned}
+  y_{it} &amp;\sim \text{Poisson}(\mu_{it}), \\[4pt]
+  \log \mu_{it}
+    &amp;= \underbrace{\log e_{it}}_{\text{offset}}
+       + \gamma_0
+       + \gamma_1\,\mathbf{1}_{\{t=\text{post}\}}
+       + \delta_1\,\text{RedMin}_i
+       + \delta_2\,\text{Comp}_i \\[2pt]
+    &amp;\quad + \delta_3\,\text{HomeTeam}_i
+           + \delta_4\,\text{AwayTeam}_i
+           + \delta_5\,\text{Season}_i
+           + \delta_6\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr).
+\end{aligned}
+\]</span></p></li>
+<li><p><span class="math inline">\(y_{it}\)</span> = goal count for match <span class="math inline">\(i\)</span> in period <span class="math inline">\(t\in\{\text{pre},\text{post}\}\)</span>.</p></li>
+<li><p><span class="math inline">\(e_{it}\)</span> = minutes of exposure in that period (offset coefficient fixed at 1).</p></li>
+</ul>
+<p><em>Offset</em> <span class="math inline">\(\log e_{it}\)</span> fixes its coefficient at 1, so <span class="math inline">\(\exp(\gamma_1)\)</span> is the <strong>multiplicative change in the goal rate per minute</strong> once a red card is on the pitch.</p>
+<ul>
+<li><p><strong>Key assumptions</strong></p>
+<ol type="1">
+<li>Conditional on covariates, goals follow a Poisson process with constant rate within each period. No over-dispersion which can be checked with over-dispersion diagnostic (<span class="math inline">\(\phi\)</span>); if <span class="math inline">\(\phi\gg1\)</span>, switch to negative-binomial</li>
+<li>Independence across matches; correct specification of offset.</li>
+<li>No major omitted variables that correlate with both the appearance of a red card and subsequent scoring (limited by the dataset’s variable set).</li>
+</ol></li>
+<li><p><strong>Enhancements over § 6.2</strong></p>
+<ul>
+<li><p><strong>Unequal exposure handled automatically</strong> via the offset; long post-card windows contribute proportionately more information.</p></li>
+<li><p>Proper <strong>count likelihood</strong>; no Normality assumption at small goal counts.</p></li>
+</ul></li>
+</ul>
+<!-- -->
+<ul>
+<li><p><strong>Results</strong></p>
+<ul>
+<li><p>Dispersion <span class="math inline">\(\hat{\phi}=1.05\)</span> ⇒ Poisson adequate (no need for NB).</p></li>
+<li><p>Exponentiated period coefficient <span class="math inline">\(\exp(\hat{\gamma}_1)=\;1.55\)</span><br>
+⇒ goal-per-minute rate increases by <span class="math inline">\(≈ 55 \%\)</span> after a red card.</p></li>
+<li><p>t-statistic = 15.45; clustered <em>p</em>-value ≈ 0</p></li>
+<li><p><code>red_card_minute</code> coefficient <span class="math inline">\(\exp(\hat{\delta}_1) &gt;/≈ 1\)</span> ⇒ later cards yield a higher / similar increase to goals per minute.</p></li>
+<li><p>Competition, team and season controls largely insignificant.</p></li>
+</ul></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit Poisson GLM with a log-offset and controlling for all factors mentioned</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="co"># in EDA</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>mod_pois <span class="ot">&lt;-</span> <span class="fu">glm</span>(</span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>    goals <span class="sc">~</span> period <span class="sc">+</span> red_card_minute <span class="sc">+</span> competition <span class="sc">+</span> home_team <span class="sc">+</span> away_team <span class="sc">+</span> </span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a>        season <span class="sc">+</span> season<span class="sc">:</span>day_in_season,</span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> poisson,</span>
+<span id="cb46-7"><a href="#cb46-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">data   =</span> df_rates_all_long,</span>
+<span id="cb46-8"><a href="#cb46-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># trick: move log(minutes) into 'offset' so its coefficient is fixed at 1</span></span>
+<span id="cb46-9"><a href="#cb46-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">offset =</span> <span class="fu">log</span>(minutes)</span>
+<span id="cb46-10"><a href="#cb46-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb46-11"><a href="#cb46-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-12"><a href="#cb46-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Phi = 1.05 --&gt; not over-dispersed, meaning negative binomial distribution is</span></span>
+<span id="cb46-13"><a href="#cb46-13" aria-hidden="true" tabindex="-1"></a><span class="co"># not needed and Poisson distributional assumption is appropriate</span></span>
+<span id="cb46-14"><a href="#cb46-14" aria-hidden="true" tabindex="-1"></a>phi <span class="ot">&lt;-</span> <span class="fu">with</span>(<span class="fu">summary</span>(mod_pois), deviance <span class="sc">/</span> df.residual)</span>
+<span id="cb46-15"><a href="#cb46-15" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">"Dispersion φ ="</span>, <span class="fu">round</span>(phi, <span class="dv">2</span>), <span class="st">"</span><span class="sc">\n</span><span class="st">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Dispersion φ = 1.05 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Cluster-robust SEs at the match level to get correct inference </span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (since "pre" and "post" observations are correlated for each match)</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Period indicator (pre/post) is statistically significant on the 5% level</span></span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="co"># (Output hidden since too many coefficients)</span></span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a><span class="fu">invisible</span>(</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">coeftest</span>(mod_pois, <span class="at">vcov =</span> <span class="fu">vcovCL</span>(mod_pois, <span class="at">cluster =</span> <span class="sc">~</span> game_id))</span>
+<span id="cb48-7"><a href="#cb48-7" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb48-8"><a href="#cb48-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb48-9"><a href="#cb48-9" aria-hidden="true" tabindex="-1"></a><span class="co"># The exponentiated coefficient for the period indicator (pre/post) is equal to</span></span>
+<span id="cb48-10"><a href="#cb48-10" aria-hidden="true" tabindex="-1"></a><span class="co"># 1.55, meaning that once a red card is shown the chance of a goal in any given</span></span>
+<span id="cb48-11"><a href="#cb48-11" aria-hidden="true" tabindex="-1"></a><span class="co"># minute rises by 55%</span></span>
+<span id="cb48-12"><a href="#cb48-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Omitted team fixed effects for readability</span></span>
+<span id="cb48-13"><a href="#cb48-13" aria-hidden="true" tabindex="-1"></a><span class="fu">tidy</span>(mod_pois, <span class="at">exponentiate =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb48-14"><a href="#cb48-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">str_detect</span>(term, <span class="st">"team"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 21 × 5
+   term                               estimate std.error statistic  p.value
+   &lt;chr&gt;                                 &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+ 1 (Intercept)                          0.0166  0.366     -11.2    4.53e-29
+ 2 periodpost                           1.55    0.0296     14.9    5.31e-50
+ 3 red_card_minute                      1.00    0.000723    5.54   3.00e- 8
+ 4 competition2. Bundesliga, Germany    1.14    0.634       0.201  8.41e- 1
+ 5 competitionChampionship, England     1.11    0.698       0.152  8.79e- 1
+ 6 competitionLeague One, England       1.18    0.675       0.244  8.07e- 1
+ 7 competitionLeague Two, England       0.916   0.658      -0.133  8.94e- 1
+ 8 competitionPremier League, England   0.777   0.726      -0.347  7.29e- 1
+ 9 competitionLigue 1, France           1.14    0.124       1.03   3.01e- 1
+10 competitionPrimera, Spain            0.956   0.640      -0.0697 9.44e- 1
+# ℹ 11 more rows</code></pre>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

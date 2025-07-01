@@ -1,0 +1,825 @@
+---
+title: "Master"
+author: "Lino M."
+format: html
+output:
+  html_document:
+    keep_md: true
+execute:
+  message: false
+  warning: false
+  freeze: auto  # re-run chunks only when their code changes
+---
+
+The code and report is entirely my own work, unless indicated otherwise. ChatGPT was used as an AI assistant to help write code.
+
+------------------------------------------------------------------------
+
+## Summary
+
+-   **Goal of the challenge** – *Determine whether issuing a red card ultimately leads to **more total goals** in a football match.*
+
+-   **Data** – 20 000 football matches (10 European leagues, 5 seasons) (games.csv) + minute-stamped goals & red-cards (events.csv).
+
+-   **Two analytical lenses**
+
+    1.  **Across-matches:** compare matches with vs. without a red.
+
+        -   OLS (no controls) → +0.05 extra goals (p \> .05).
+        -   OLS (with controls) → +0.07 extra goals (p \< .05).
+        -   Poisson GLM (with controls) → +2.6 % goals (p \< .05).
+        -   Limitation: ignores timing; prone to omitted-variable bias.
+
+    2.  **Within-match:** use only games with a single red card.
+
+        -   Paired *pre/post* rate diff ⇒ +0.013 g · min⁻¹ (p \< .05).
+        -   **Poisson GLM + log-exposure offset** ⇒ per-minute goal rate **↑ 55 %** after a red card\
+            (exp(γ̂₁) ≈ 1.55, ϕ ≈ 1.05).
+
+-   **Robustness** – Effect survives league, team, season/trend controls.
+
+-   **Core finding**
+
+    > **Once a match goes to 10 v 11, the combined scoring rate of both teams rises by ≈ 55 %.**
+
+-   **Caveats** – Unobserved match-intensity & fatigue may confound across-match results; even in within-match comparisons omitted variables may still exist.
+
+### Directions for Future Work
+
+-   **Heterogeneity checks**
+
+    -   Separate uplifts by *league*, *home-vs-away offender*, and *card-minute buckets* (0–15, 16–30 …).
+
+-   **Richer causal frameworks**
+
+    -   **Propensity-score matching** at match level using league, season, team attack/defence ratings.
+    -   Minute-resolved **Difference-in-Differences**: untreated minutes from no-card matches as control.
+    -   **Event-time hazard models** (discrete-time logit / Cox PH) with time-varying “RedOnPitch” covariate.
+    -   **Synthetic control** for repeated fixtures (same home/away pair across seasons).
+
+-   **Model extensions**
+
+    -   Allow for multiple cards: indicator for ≥ 2 reds; interaction with first-card timing.
+    -   Hierarchical (mixed-effects) Poisson to share strength across teams/leagues.
+
+------------------------------------------------------------------------
+
+## 1 Install packages & take snapshot
+
+```{r setup-packages}
+#| eval: false
+
+install.packages(c("here", "janitor", "lmtest", "sandwich", 
+                   "tidymodels", "tidyverse"))
+
+# *lock in* the session state
+renv::snapshot()
+
+```
+
+------------------------------------------------------------------------
+
+## 2 Load required packages
+
+```{r load-packages}
+#| results: "hide"
+
+# restore the snapshot taken above
+renv::restore()
+
+library(here)         # build OS‑agnostic paths
+library(janitor)      # data cleaning helpers
+library(lmtest)
+library(sandwich)
+library(tidymodels)   # modelling grammar
+library(tidyverse)    # ggplot2, dplyr, etc.
+
+```
+
+------------------------------------------------------------------------
+
+## 3 Read & tidy data
+
+```{r read-data}
+#| results: "hide"
+
+#---------------------------------------------------------------------
+#  Games data set ----------------------------------------------------
+#---------------------------------------------------------------------
+games <- read_csv(here("games.csv")) |> 
+    mutate(
+        home_team = as_factor(home_team),
+        away_team = as_factor(away_team),
+        competition = as_factor(competition),
+        total_goals = home_goals + away_goals
+    ) |> 
+    mutate(
+        year = as_factor(year(date)), 
+        month = as_factor(month(date)), 
+        day = as_factor(day(date)), 
+        season = as_factor(
+            case_when(
+                date < "2019-06-01" ~ "2018/2019", 
+                date > "2019-06-01" & date < "2020-04-01" ~ "2019/2020", 
+                date > "2020-04-01" & date < "2021-06-01" ~ "2020/2021", 
+                date > "2021-06-01" & date < "2022-06-01" ~ "2021/2022", 
+                date > "2022-06-01" ~ "2022/2023", 
+                
+            )
+        ), 
+        .after = date
+    ) |> 
+    group_by(season) |> 
+    mutate(
+        day_in_season = as.numeric(difftime(date, min(date), units = "days")), 
+        .after = season
+    ) |> 
+    ungroup()
+
+#---------------------------------------------------------------------
+#  Events data set ---------------------------------------------------
+#---------------------------------------------------------------------
+events <- read_csv(here("events.csv")) |> 
+    mutate(
+        side = as_factor(side),
+        type = as_factor(type)
+    )
+
+red_minutes <- events |>
+    filter(type == "red_card") |>
+    arrange(game_id, minute) |>
+    group_by(game_id) |>
+    mutate(order = row_number(),
+           card_label = paste0("red_card", order, "_minute")) |>
+    select(game_id, card_label, minute) |>
+    pivot_wider(names_from  = card_label,
+                values_from = minute) |>
+    ungroup()
+
+red_counts <- events |> 
+    group_by(game_id) |> 
+    summarise(
+        has_red_card = any(type == "red_card"), 
+        home_red_cards = sum(type == "red_card" & side == "home"),
+        away_red_cards = sum(type == "red_card" & side == "away"),
+        total_red_cards = sum(type == "red_card")
+    ) |> 
+    ungroup()
+
+events <- events |> 
+    left_join(red_minutes, by = "game_id") |> 
+    left_join(red_counts, by = "game_id")
+
+#---------------------------------------------------------------------
+#  Merged data sets --------------------------------------------------
+#---------------------------------------------------------------------
+df_all <- games |> 
+    left_join(events, by = "game_id") |> 
+    mutate(
+        has_red_card = replace_na(has_red_card, FALSE), 
+        home_red_cards = replace_na(home_red_cards, 0), 
+        away_red_cards = replace_na(away_red_cards, 0), 
+        total_red_cards = replace_na(total_red_cards, 0)
+    )
+
+df_simple <- games |> 
+    left_join(red_counts, by = "game_id") |> 
+    mutate(
+        has_red_card = replace_na(has_red_card, FALSE), 
+        home_red_cards = replace_na(home_red_cards, 0), 
+        away_red_cards = replace_na(away_red_cards, 0), 
+        total_red_cards = replace_na(total_red_cards, 0)
+    )
+
+```
+
+------------------------------------------------------------------------
+
+## 4 EDA
+
+-   **Key observations from EDA:**
+
+    -   **Goals:**
+
+        -   Goals seem to follow a Poisson distribution (low count data) and more home goals are usually scored.
+
+        -   Amount of goals differs by league.
+
+        -   No time trend in the average number of goals on each match day exists across seasons or within seasons.
+
+        -   Withing games a slight positive trend in when goals are scored seems to exist (e.g. more goals in second half than in first half).
+
+    -   **Red cards:**
+
+        -   Most games have no red cards, range of total red cards is 0 to 5.
+
+        -   Red cards do not differ by sides.
+
+        -   Average number of red cards differs greatly by league.
+
+        -   Time trend in the average number of red cards on each match day does not exist across seasons, but does exist within seasons. Within seasons the trend is mostly negative, meaning that fewer red cards are given towards the end of each season.
+
+        -   Within games a cleara positive trend in when red cards are given exists (number of red cards given increases steadily over the course of the game).
+
+-   **Conclusions from EDA:**
+
+    -   Should model goals with Poisson distribution (check for overdispersion --\> negative binomial distribution).
+
+    -   Have to control for league, time trend within season and time within games to avoid running into omitted variable bias. As an example of what could be an omitted variable:
+
+        -   It could be the case that the Ligue 1 has more goals and red cards on average than other leagues, but due to another factor such as "culture/intensity of games", i.e. both red cards and goals are correlated with "culture/intensity of games". This factor would then represent an omitted variable and would bias our estimate of the effect of red cards on goals.
+
+    -   However, omitted variable bias could still persist, sincewe are limited by the data we have. As another example of an omitted variable we might not be able to control for:
+
+        -   It probably is the case that fatigue of players increases over the course of a game. It is also very likely that fatigue is correlated with both red cards and goals. Hence, fatigue would be an omitted variable which we might not be able to control for and would thus bias our estimate. (we would wrongly attribute the positive effect of fatigue on both red cards and goals to the effect of red cards on goals).
+
+    -   Although no plot for the average number of goals or red cards on a team basis was created, it is likely that differences exist across teams as well and that team-specific effects should probably be controlled for.
+
+### 4.1 Goals
+
+```{r eda-total-goals}
+
+# Total goals
+df_simple |> 
+    ggplot(aes(x = total_goals)) + 
+    geom_bar(fill = "blue", alpha = 0.6) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+
+```
+
+```{r eda-home-away-goals}
+
+# Home vs. Away goals (more home goals)
+df_simple |> 
+    pivot_longer(cols = c(home_goals, away_goals), names_to = "side", 
+                 values_to = "goals") |> 
+    ggplot(aes(x = goals, fill = side)) +
+    geom_histogram(position = "identity", alpha = 0.5, binwidth = 1) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+```
+
+```{r eda-total-goals-league}
+
+# Total goals by league (league effects seem to exist)
+df_simple |> 
+    ggplot(aes(x = total_goals, color = competition)) + 
+    geom_density(linewidth = 0.75, adjust = 2)
+
+df_simple |> 
+    ggplot(aes(x = total_goals, y = competition)) +
+    geom_boxplot()
+
+```
+
+```{r eda-avg-total-goals-trend-across-seasons}
+
+# Helper dataset
+df_simple_avg_goals <- df_simple |> 
+    group_by(season, date) |> 
+    summarise(avg_total_goals = mean(total_goals)) |> 
+    ungroup()
+
+# Trend in total goals over time across seasons (no effect)
+df_simple_avg_goals |> 
+    ggplot(aes(x = date, y = avg_total_goals)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
+tidy(lm(avg_total_goals ~ date, data = df_simple_avg_goals))
+
+```
+
+```{r eda-avg-total-goals-trend-within-seasons}
+
+# Trend in total goals over time within seasons (no effect)
+df_simple_avg_goals |> 
+    ggplot(aes(x = date, y = avg_total_goals, colour = season, group = season)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
+tidy(lm(avg_total_goals ~ date * season, data = df_simple_avg_goals))
+
+```
+
+```{r eda-goals-within-games}
+
+# Timing of goals within games
+df_all |> 
+    filter(type == "goal") |> 
+    ggplot(aes(x = minute)) +
+    geom_histogram(fill = "blue", alpha = 0.5, binwidth = 1)
+
+```
+
+### 4.2 Red Cards
+
+```{r eda-total-red-cards}
+
+# Total red cards
+df_simple |> 
+    ggplot(aes(x = total_red_cards)) + 
+    geom_bar(fill = "blue", alpha = 0.6) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+
+```
+
+```{r eda-home-away-red-cards}
+
+# Home vs. Away red cards (similar home and away red cards)
+df_simple |> 
+    pivot_longer(cols = c(home_red_cards, away_red_cards), names_to = "side", 
+                 values_to = "red_cards") |> 
+    ggplot(aes(x = red_cards, fill = side)) +
+    geom_histogram(position = "identity", alpha = 0.5, binwidth = 1) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+
+```
+
+```{r eda-avg-red-cards-league}
+
+# Average number of red cards by league (league effects exist)
+df_simple |> 
+    group_by(competition) |> 
+    summarise(
+        avg_red_cards = mean(total_red_cards, na.rm = TRUE),
+        se            = sd(total_red_cards, na.rm = TRUE) / sqrt(n())
+    ) |> 
+    mutate(
+        ymin = avg_red_cards - 1.96 * se, 
+        ymax = avg_red_cards + 1.96 * se,
+        competition = fct_reorder(competition, avg_red_cards)
+    ) |> 
+    ggplot(aes(x = competition, y = avg_red_cards)) +
+    geom_col(width = .7, fill = "steelblue") +
+    geom_errorbar(aes(ymin = ymin, ymax = ymax),
+                  width = .25) +
+    coord_flip()
+
+```
+
+```{r eda-avg-red-cards-trend-across-seasons}
+
+# Helper dataset
+df_simple_avg_red_cards <- df_simple |> 
+    group_by(season, date) |> 
+    summarise(avg_red_cards = mean(total_red_cards)) |> 
+    ungroup()
+
+# Trend in average number of red cards over time across seasons (no effect)
+df_simple_avg_red_cards |> 
+    ggplot(aes(x = date, y = avg_red_cards)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
+tidy(lm(avg_red_cards ~ date, data = df_simple_avg_red_cards))
+
+```
+
+```{r eda-avg-red-cards-within-seasons}
+
+# Trend in total goals over time within seasons (all seasons apart from
+# 2018/2019 seem to have a declining number of average red cards over the season)
+df_simple_avg_red_cards |> 
+    ggplot(aes(x = date, y = avg_red_cards, colour = season, group = season)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
+tidy(lm(avg_red_cards ~ date * season, data = df_simple_avg_red_cards))
+
+```
+
+```{r eda-red-cards-within-games}
+
+# Timing of red cards within games
+df_all |> 
+    filter(type == "red_card") |> 
+    ggplot(aes(x = minute)) +
+    geom_histogram(fill = "blue", alpha = 0.5, binwidth = 1)
+
+```
+
+------------------------------------------------------------------------
+
+## 5 Simple **across-matches** comparison
+
+*A quick “bird’s-eye” baseline before diving into within-match dynamics.*
+
+Games are split into two buckets—those that contain **at least one** red card and those that do not—and the **total number of goals** in each match is compared. Because the timing of cards (and many other unobserved factors such as match intensity) is ignored, this exercise is highly susceptible to **endogeneity**: matches with reds are unlikely to be identical in every other respect to matches without them. Factors such as match intensity is likely to be an omitted variable and will biase our estimate. Still, the exercise helps anchor expectations.
+
+### 5.1 Difference in means — *no controls*
+
+-   **Model (OLS)**
+
+    $$
+        \text{TotalGoals}_i=\alpha+\beta\;\mathbf 1_{\{\text{RedCard}_i\}}+\varepsilon_i
+    $$
+
+    – single binary regressor.
+
+-   **Assumptions** Matches independent; treatment assignment ignorable (clearly violated).
+
+-   **Quick findings**
+
+    -   Histograms, densities and box-plots show only a small visual shift.
+
+    -   Point estimate $\hat{\beta}\approx0.05$ goals, *p* \> 0.05 → **no significant effect**.
+
+    -   Interpretation discouraged because of omitted-variable bias.
+
+```{r simple-across-compare-no-controls}
+
+# Histogram
+df_simple |> 
+    ggplot(aes(x = total_goals, fill = has_red_card)) +
+    geom_histogram(position = "identity", alpha = 0.5, binwidth = 1) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+
+# Density differs slightly
+df_simple |> 
+    ggplot(aes(x = total_goals, color = has_red_card)) + 
+    geom_density(linewidth = 0.75, adjust = 2.5) +
+    scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), 
+                                                by = 1), 
+                       minor_breaks = NULL)
+
+# Boxplot shows that total goals might differ by whether at least one red card 
+# occurred in a game
+df_simple |> 
+    ggplot(aes(x = has_red_card, y = total_goals)) +
+    geom_boxplot()
+
+# Regression denies any effect of at least on red card on total goals on the 
+# 5% level
+tidy(lm(total_goals ~ has_red_card, data = df_simple))
+
+```
+
+### 5.2 Difference in means — *with controls*
+
+-   **Model**
+
+    $$
+    \begin{aligned}
+      \text{TotalGoals}_i
+        &= \alpha
+           + \beta\,\mathbf{1}_{\{\text{RedCard}_i\}}
+           + \gamma_1\,\text{Comp}_i
+           + \gamma_2\,\text{HomeTeam}_i
+           + \gamma_3\,\text{AwayTeam}_i \\[2pt]
+        &\quad + \gamma_4\,\text{Season}_i
+               + \gamma_5\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr)
+               + \varepsilon_i .
+    \end{aligned}
+    $$
+
+-   **Assumptions** Same as 5.1 but now conditional on observable league/team/season factors.
+
+-   **Results outline**
+
+    -   $\hat{\beta}\approx0.07$ goals **per match**, *p* \< 0.05 (statistically significant).
+
+    -   Suggests red-card matches are slightly higher-scoring **after** controlling for league and team strength.
+
+    -   Still ignores *when* the card occurred and within-match causality.
+
+```{r simple-across-compare-with-controls}
+
+# Regression finds statistically significant, positive effect of approximately 
+# 0.07 more goals for matches that had at least one red card.
+tidy(
+    lm(total_goals ~ has_red_card + competition + home_team + away_team + 
+           season + season:day_in_season, 
+       data = df_simple)
+)
+
+```
+
+### 5.3 Poisson GLM — *count model with controls*
+
+-   **Model**
+
+    $$
+    \begin{aligned}
+      \text{TotalGoals}_i &\sim \text{Poisson}(\mu_i), \\[4pt]
+      \log \mu_i
+        &= \alpha
+           + \beta\,\mathbf{1}_{\{\text{RedCard}_i\}}
+           + \gamma_1\,\text{Comp}_i
+           + \gamma_2\,\text{HomeTeam}_i \\[2pt]
+        &\quad + \gamma_3\,\text{AwayTeam}_i
+               + \gamma_4\,\text{Season}_i
+               + \gamma_5\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr).
+    \end{aligned}
+    $$
+
+-   **Diagnostics**
+
+    -   Poisson distribution more appropriate due to count nature of total number of goals data
+    -   Pearson dispersion $\hat{\phi}=0.98$ ⇒ **no over-dispersion**; Poisson suitable.
+
+-   **Results outline**
+
+    -   $\exp(\hat{\beta})\approx1.026$ → matches with ≥ 1 red card have **≈ 2.6 % more goals** on average, *p* \< 0.05 (statistically significant).
+
+-   **Limitations (shared with 5.1 & 5.2)**
+
+    -   Still cross-sectional; cannot say whether the red card *caused* the extra goals or both stem from some unmeasured match characteristic.
+
+```{r simple-across-compare-poisson-glm-with-controls}
+
+# Poisson GLM
+pois_fit <- glm(
+    total_goals ~ has_red_card + competition + home_team + away_team + 
+        season + season:day_in_season,
+    family = poisson(), 
+    data = df_simple
+)
+
+# Check over-dispersion (0.976, so close to 1 --> Poisson distributional 
+# assumption is fine, do not need to switch to negative binomial)
+sum(residuals(pois_fit, type = "pearson")^2) / pois_fit$df.residual
+
+# Exponentiated coefficients (controlling for competition, teams and season 
+# effects games with a red card have 2.6% more goals (statistically 
+# significant))
+tidy(pois_fit, exponentiate = TRUE)
+
+```
+
+------------------------------------------------------------------------
+
+## 6 Within game comparison
+
+Games with exactly one red card are compared for the goals scored before and after the red card (serves as close to a valid counterfactual as possible).\
+A simple paired test (§ 6.2) shows that the number of goals per minute scored **increases** once a red card is shown, but it weights all time windows after a red card is shown equally.\
+A Poisson GLM with a log-exposure offset (§ 6.3) corrects that imbalance: after controlling for card timing, league fixed effects, team fixed effects and season fixed effects and trends, the *per-minute goal rate* is **≈ 55 % higher** when a team is reduced to ten players. Cluster-robust errors and a dispersion check confirm the finding’s robustness.\
+Therefore, both models agree (although more weight should be placed on the conclusion of the Poisson GLM with a log-exposure offset since it is more appropriate) that red cards lead to more goals.
+
+### 6.1 Prepare data for comparisons
+
+For simplicity, only matches with exactly one red card throughout the whole match are considered.\
+Furthermore, two separate datasets were created:
+
+1.  **Full** – drop matches with a 90′ card (since a card at 90' has no “post” exposure).
+2.  **Trim \< 80′** – smaller sample omitting cards in the 80–89′ range as well.
+
+-   The second dataset is used for the paired pre/post comparison since the post number of goals per minute rate varies wildly (is unreasonably large if a goal is scored after the red card when the minute count is low).
+
+-   The first dataset is used for the Poisson GLM with a log-exposure offset, since this model automatically downweights observations with low exposure, i.e. with a low minute count, hence no removal is necessary.
+
+```{r within-compare-data-prep}
+
+df_all_one_red <- df_all |> 
+    filter(total_red_cards == 1) |> 
+    rename(red_card_minute = red_card1_minute) |> 
+    select(-c(red_card2_minute, red_card3_minute, red_card4_minute, 
+              red_card5_minute, has_red_card, home_red_cards, away_red_cards, 
+              total_red_cards)) |> 
+    group_by(game_id) |> 
+    mutate(
+        goals_pre   = sum(type == "goal" & minute < red_card_minute),
+        goals_post    = sum(type == "goal" & minute > red_card_minute),
+        
+        minutes_pre = first(red_card_minute),
+        minutes_post  = 90 - first(red_card_minute),
+        
+        rate_pre    = goals_pre / minutes_pre, 
+        rate_post   = goals_post  / minutes_post, 
+        rates_diff = rate_post - rate_pre
+    ) |> 
+    ungroup()
+
+df_rates_all <- df_all_one_red |> 
+    filter(red_card_minute != 90) |> # exclude matches where the red card 
+    # happened in minute 90 (can't use for estimation of what happens after a 
+    # red card is given)
+    group_by(game_id) |> 
+    summarise(
+        across(-c(minute, side, type), first)
+    ) |> 
+    ungroup()
+
+df_rates_all_long <- df_rates_all |> 
+    pivot_longer(
+        cols = c("rate_pre", "rate_post", 
+                 "goals_pre", "goals_post", 
+                 "minutes_pre", "minutes_post"), 
+        names_to     = c(".value", "period"), 
+        names_pattern = "(.*)_(pre|post)"
+    ) |> 
+    mutate(period = as_factor(period)) |> 
+    select(-c(rates_diff))
+
+df_rates_80 <- df_all_one_red |> 
+    filter(red_card_minute < 80) |> # exclude matches where the red card 
+    # happened after minute 80
+    group_by(game_id) |> 
+    summarise(
+        across(-c(minute, side, type), first)
+    ) |> 
+    ungroup()
+
+df_rates_80_long <- df_rates_80 |> 
+    pivot_longer(
+        cols = c("rate_pre", "rate_post", 
+                 "goals_pre", "goals_post", 
+                 "minutes_pre", "minutes_post"), 
+        names_to     = c(".value", "period"), 
+        names_pattern = "(.*)_(pre|post)"
+    ) |> 
+    mutate(period = as_factor(period)) |> 
+    select(-c(rates_diff))
+
+```
+
+### 6.2 Paired pre/post comparison
+
+*(linear model on the within-match difference of goal-per-minute rates)*
+
+-   **Model specification**
+
+    $$
+    \begin{aligned}
+      d_i
+        &= \alpha
+           + \beta_1\,\text{RedMin}_i
+           + \beta_2\,\text{Comp}_i
+           + \beta_3\,\text{HomeTeam}_i
+           + \beta_4\,\text{AwayTeam}_i \\[2pt]
+        &\quad + \beta_5\,\text{Season}_i
+               + \beta_6\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr)
+               + \varepsilon_i .
+    \end{aligned}
+    $$
+
+where
+
+$$
+d_i=\text{rate}_{\text{post}}-\text{rate}_{\text{pre}},\qquad
+\text{rate}_{\text{pre}}=\frac{g_{\text{pre}}}{m_{\text{pre}}},\qquad
+\text{rate}_{\text{post}}=\frac{g_{\text{post}}}{m_{\text{post}}}
+$$
+
+with $g_{\bullet}$ = goals, $m_{\bullet}$ = minutes.
+
+-   **Key assumptions**
+    1.  The pre-card rate is a valid counter-factual for the post-card rate, i.e. match would have evolved with same rate as before the red card had the red card not happened.
+    2.  Independence across matches
+    3.  Normality of $d_i$ (checked via histogram).
+    4.  In estimation of average difference every match receives equal weight, regardless of how long the “post” window is, i.e. exposure is ignored (e.g. difference in rates for a match where the red card occurred in the 15' minute is weighted the same as the difference in rates for a match where the red card occurred in the 75' minute).
+
+<!-- -->
+
+-   **Results**
+
+    -   Mean difference $\hat{\alpha}$ = 0.0126 goals ∙ min$^{-1}$
+
+    -   t-statistic = 12.34; clustered *p*-value ≈ 0
+
+    -   After adjusting for card minute, competition, home/away teams, and season, the coefficient on $d_i$ no longer remains significant at the 5 % level. But this is only due to baseline issues with the dummy variables.
+
+    -   When comparing coefficients in the stacked linear model going from no controls to all relevant controls, the coefficient does not change, meaning that the effect is robust (makes sense since most controls are constant across games anyways).
+
+```{r within-compare-lm}
+
+# Difference in pre/post red card goals per minute rates looks approximately 
+# normal
+df_rates_80 |> 
+    ggplot(aes(x = rates_diff)) + 
+    geom_histogram()
+
+
+# Test whether rates_diff is significantly different from zero (linear 
+# regression is equivalent to paired t-test)
+
+# No controls
+tidy(lm(rates_diff ~ 1, data = df_rates_80))
+
+# Control for all mentioned factors in EDA
+# Omitted team fixed effects for readability
+tidy(lm(rates_diff ~ 1 + red_card_minute + competition + 
+            home_team + away_team + season + season:day_in_season, 
+        data = df_rates_80)) |>
+    filter(!str_detect(term, "team"))
+
+
+# Do comparison in long format to get baseline rate (pre rate) and difference 
+# to it (post rate) to get a sense of magnitude of difference
+
+# No controls
+tidy(lm(rate ~ period, data = df_rates_80_long))
+
+# Control for all mentioned factors in EDA
+lmCR <- lm(rate ~ period + red_card_minute + competition + 
+               home_team + away_team + season + season:day_in_season, 
+           data = df_rates_80_long)
+
+# Cluster-robust SEs at the match level to get correct inference 
+# (since "pre" and "post" observations are correlated for each match)
+# Period indicator (pre/post) is statistically significant on the 5% level
+# (Output hidden since too many coefficients)
+invisible(
+    coeftest(lmCR, vcov = vcovCL(lmCR, cluster = ~ game_id))
+)
+
+# Omitted team fixed effects for readability
+tidy(lmCR) |> 
+    filter(!str_detect(term, "team"))
+
+```
+
+### 6.3 Poisson GLM with log-exposure offset
+
+*(count model respecting unequal time windows and match clustering)*
+
+-   **Model specification**
+
+    $$
+    \begin{aligned}
+      y_{it} &\sim \text{Poisson}(\mu_{it}), \\[4pt]
+      \log \mu_{it}
+        &= \underbrace{\log e_{it}}_{\text{offset}}
+           + \gamma_0
+           + \gamma_1\,\mathbf{1}_{\{t=\text{post}\}}
+           + \delta_1\,\text{RedMin}_i
+           + \delta_2\,\text{Comp}_i \\[2pt]
+        &\quad + \delta_3\,\text{HomeTeam}_i
+               + \delta_4\,\text{AwayTeam}_i
+               + \delta_5\,\text{Season}_i
+               + \delta_6\,\bigl(\text{Season}_i\times\text{DayInSeason}_i\bigr).
+    \end{aligned}
+    $$
+
+-   $y_{it}$ = goal count for match $i$ in period $t\in\{\text{pre},\text{post}\}$.
+
+-   $e_{it}$ = minutes of exposure in that period (offset coefficient fixed at 1).
+
+*Offset* $\log e_{it}$ fixes its coefficient at 1, so $\exp(\gamma_1)$ is the **multiplicative change in the goal rate per minute** once a red card is on the pitch.
+
+-   **Key assumptions**
+
+    1.  Conditional on covariates, goals follow a Poisson process with constant rate within each period. No over-dispersion which can be checked with over-dispersion diagnostic ($\phi$); if $\phi\gg1$, switch to negative-binomial
+    2.  Independence across matches; correct specification of offset.
+    3.  No major omitted variables that correlate with both the appearance of a red card and subsequent scoring (limited by the dataset’s variable set).
+
+-   **Enhancements over § 6.2**
+
+    -   **Unequal exposure handled automatically** via the offset; long post-card windows contribute proportionately more information.
+
+    -   Proper **count likelihood**; no Normality assumption at small goal counts.
+
+<!-- -->
+
+-   **Results**
+
+    -   Dispersion $\hat{\phi}=1.05$ ⇒ Poisson adequate (no need for NB).
+
+    -   Exponentiated period coefficient $\exp(\hat{\gamma}_1)=\;1.55$\
+        ⇒ goal-per-minute rate increases by $≈ 55 \%$ after a red card.
+
+    -   t-statistic = 15.45; clustered *p*-value ≈ 0
+
+    -   `red_card_minute` coefficient $\exp(\hat{\delta}_1) >/≈ 1$ ⇒ later cards yield a higher / similar increase to goals per minute.
+
+    -   Competition, team and season controls largely insignificant.
+
+```{r within-compare-glm}
+
+# Fit Poisson GLM with a log-offset and controlling for all factors mentioned
+# in EDA
+mod_pois <- glm(
+    goals ~ period + red_card_minute + competition + home_team + away_team + 
+        season + season:day_in_season,
+    family = poisson,
+    data   = df_rates_all_long,
+    # trick: move log(minutes) into 'offset' so its coefficient is fixed at 1
+    offset = log(minutes)
+)
+
+# Phi = 1.05 --> not over-dispersed, meaning negative binomial distribution is
+# not needed and Poisson distributional assumption is appropriate
+phi <- with(summary(mod_pois), deviance / df.residual)
+cat("Dispersion φ =", round(phi, 2), "\n")
+
+# Cluster-robust SEs at the match level to get correct inference 
+# (since "pre" and "post" observations are correlated for each match)
+# Period indicator (pre/post) is statistically significant on the 5% level
+# (Output hidden since too many coefficients)
+invisible(
+    coeftest(mod_pois, vcov = vcovCL(mod_pois, cluster = ~ game_id))
+)
+
+# The exponentiated coefficient for the period indicator (pre/post) is equal to
+# 1.55, meaning that once a red card is shown the chance of a goal in any given
+# minute rises by 55%
+# Omitted team fixed effects for readability
+tidy(mod_pois, exponentiate = TRUE) |>
+    filter(!str_detect(term, "team"))
+
+```
